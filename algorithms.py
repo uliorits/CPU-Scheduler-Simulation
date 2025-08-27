@@ -20,35 +20,46 @@ def fcfs_s(processes):
 
 
 def sjf(processes):
-      processes.sort(key= lambda p: p.arrival_time)
-      current_time= 0
-      completed_processes = []
-      completed_count = 0
-      n = len(processes)
+    processes.sort(key=lambda p: p.arrival_time)
+    current_time = 0
+    completed_processes = []
+    completed_count = 0
+    n = len(processes)
 
-      finished = [False] * n
+    finished = [False] * n
 
-      while completed_count < n:
-            ready_queue = [processes[i] for i in range(n) if processes[i].arrival_time <= current_time and not finished[i]]
+    while completed_count < n:
+        # Ready queue
+        ready_queue = [processes[i] for i in range(n) if processes[i].arrival_time <= current_time and not finished[i]]
 
-            if not ready_queue:
-              current_time+= 1
-              continue
-            
-            next_process = min(ready_queue, key = lambda p:p.remaining_time)
+        if not ready_queue:
+            current_time += 1
+            continue
 
-            current_time += next_process.remaining_time
-            next_process.completion_time = current_time
+        
 
-            next_process.turnaround_time = next_process.completion_time - next_process.arrival_time
-            next_process.waiting_time = next_process.turnaround_time - next_process.burst_time
+        min_remaining = min(p.remaining_time for p in ready_queue)
+        candidates = [p for p in ready_queue if p.remaining_time == min_remaining]
 
-        # Mark as finished
-            finished[processes.index(next_process)] = True
-            completed_count += 1
-            completed_processes.append(next_process)
+        if len(candidates) == 1:
+            next_process = candidates[0]
+        else:
+            # Break tie using FCFS
+            next_process = min(candidates, key=lambda p: p.arrival_time)
 
-      return completed_processes
+        # Run chosen process to completion
+        current_time += next_process.remaining_time
+        next_process.completion_time = current_time
+        next_process.turnaround_time = next_process.completion_time - next_process.arrival_time
+        next_process.waiting_time = next_process.turnaround_time - next_process.burst_time
+
+    
+        finished[processes.index(next_process)] = True
+        completed_count += 1
+        completed_processes.append(next_process)
+
+    return completed_processes
+
 
 def priority_scheduling(processes):
     processes.sort(key=lambda p: p.arrival_time)  # sort by arrival time
